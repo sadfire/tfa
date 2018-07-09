@@ -93,7 +93,7 @@ class TFA:
 
     @classmethod
     def get(cls, name: str, password: str = None):
-        password = cls._get_password(password, 'get')
+        password = cls._get_password(password, 'get', is_repeat=False)
 
         name = cls._hash(name)
 
@@ -124,6 +124,8 @@ class TFA:
     @classmethod
     def reset(cls):
         if input("Are you sure? This action reset all data in work dir (y:n)?").upper() in ["Y", "YES"]:
+
+            cls.hints("clean")
             for f in cls.__work_path__.iterdir():
                 os.remove(f.absolute())
                 return "All done."
@@ -162,13 +164,13 @@ class TFA:
             file.write(name + '\n')
 
     @classmethod
-    def _get_password(cls, password: str, action_message: str):
+    def _get_password(cls, password: str, action_message: str, is_repeat=True):
         if password is not None and cls._check_password(password):
             return password
 
         elif password is None:
             password = getpass(prompt="Insert a password to {} this key: ".format(action_message))
-            if getpass(prompt="Repeat: ") != password or not cls._check_password(password):
+            if (is_repeat and getpass(prompt="Repeat: ") != password) or not cls._check_password(password):
                 raise PasswordException("Password don't match")
             return password
 
