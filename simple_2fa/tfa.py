@@ -1,3 +1,5 @@
+#!/usr/bin/python3.6
+
 import os
 from getpass import getpass
 from getpass import getuser
@@ -12,6 +14,10 @@ from Crypto.Hash import SHA256
 
 class PasswordException(Exception):
     pass
+
+
+def file_open(file: Path, mode: str = 'r'):
+    return open(str(file), mode)
 
 
 class TFA:
@@ -48,7 +54,7 @@ class TFA:
         if not file.exists():
             return "No hints"
 
-        with open(file, 'r') as file:
+        with file_open(file, 'r') as file:
             hints = [hint.strip() for hint in file.readlines()]
 
         if arg is not None:
@@ -73,7 +79,7 @@ class TFA:
 
         try:
             data = cls._encode(str.encode(key), password)
-            with open(cls.__work_path__ / cls._hash(name), 'xb') as file:
+            with file_open(cls.__work_path__ / cls._hash(name), 'xb') as file:
                 file.write(data)
 
             cls._store_hint(hint)
@@ -97,7 +103,7 @@ class TFA:
 
         name = cls._hash(name)
 
-        with open(cls.__work_path__ / name, 'rb') as file:
+        with file_open(cls.__work_path__ / name, 'rb') as file:
             key = cls._decode(file.readline(), password)
 
         return pyotp.TOTP(key.decode()).now()
@@ -160,7 +166,7 @@ class TFA:
     def _store_hint(cls, name):
         if name is None:
             return
-        with open(cls.__work_path__ / "hints.txt", 'a') as file:
+        with file_open(cls.__work_path__ / "hints.txt", 'a') as file:
             file.write(name + '\n')
 
     @classmethod
