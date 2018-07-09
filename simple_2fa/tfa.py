@@ -106,7 +106,12 @@ class TFA:
         with file_open(cls.__work_path__ / name, 'rb') as file:
             key = cls._decode(file.readline(), password)
 
-        return pyotp.TOTP(key.decode()).now()
+        key = pyotp.TOTP(key.decode()).now()
+
+        if input("Copy code to clipboard (y:n)? ").upper() in ["Y", 'YES']:
+            pyperclip.copy(key)
+
+        return "{} {}".format(key[:3], key[3:])
 
     @classmethod
     def remove(cls, name: str):
